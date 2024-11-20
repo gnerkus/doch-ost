@@ -21,12 +21,12 @@ const AuthProvider = ({children}) => {
 
     const logIn = async (formData: LoginInput, callback: () => void) => {
         const res = await login(formData);
-        if (res.data) {
+        if (res) {
             setSession({
-                user: res.data.user,
-                token: res.token
+                user: res.user,
+                token: res.accessToken
             });
-            sessionStorage.setItem("token", res.token);
+            sessionStorage.setItem("token", res.accessToken);
             callback();
             return;
         }

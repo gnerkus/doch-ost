@@ -1,7 +1,7 @@
 ﻿import {LoginInput} from "../contracts/auth.ts";
 
 export const login = async (requestBody: LoginInput) => {
-  const response = await fetch("login", {
+  const response = await fetch("api/login", {
       method: "POST",
       headers: {
           "Content-Type": "application/json"
