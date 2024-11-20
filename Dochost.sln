@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dochost.Server", "Dochost.S
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "dochost.client", "dochost.client\dochost.client.esproj", "{F2451998-F83C-4868-95CF-6B0E149AAB21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{A14BA418-4474-499E-AD3F-8D1876AA9F93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{2C1C8729-19A4-4290-9C73-0838EE38FFC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +27,14 @@ Global
 		{F2451998-F83C-4868-95CF-6B0E149AAB21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2451998-F83C-4868-95CF-6B0E149AAB21}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F2451998-F83C-4868-95CF-6B0E149AAB21}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{A14BA418-4474-499E-AD3F-8D1876AA9F93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A14BA418-4474-499E-AD3F-8D1876AA9F93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A14BA418-4474-499E-AD3F-8D1876AA9F93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A14BA418-4474-499E-AD3F-8D1876AA9F93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C1C8729-19A4-4290-9C73-0838EE38FFC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C1C8729-19A4-4290-9C73-0838EE38FFC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C1C8729-19A4-4290-9C73-0838EE38FFC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C1C8729-19A4-4290-9C73-0838EE38FFC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
