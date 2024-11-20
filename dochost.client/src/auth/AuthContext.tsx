@@ -1,15 +1,15 @@
 ﻿import {createContext, useContext, useState} from "react";
 import {ISession, LoginInput} from "../core/contracts/auth.ts";
-import {login} from "../core/api.ts";
+import {login} from "../core/http/api.ts";
 
 type IAuthContext = {
     session: ISession | null
-    logIn: (formData: LoginInput) => void
-    logOut: () => void
+    logIn: (formData: LoginInput, callback: () => void) => void
+    logOut: (callback: () => void) => void
 }
 
 const AuthContext = createContext<IAuthContext>({
-    logIn: formData => {
+    logIn: () => {
     },
     logOut: () => {
     },
@@ -17,31 +17,29 @@ const AuthContext = createContext<IAuthContext>({
 });
 
 const AuthProvider = ({children}) => {
-    const [user, setUser] = useState(null);
-    const [token, setToken] = useState(sessionStorage.getItem("token"));
+    const [session, setSession] = useState<ISession | null>(null);
 
-    const logIn = async (formData: LoginInput) => {
+    const logIn = async (formData: LoginInput, callback: () => void) => {
         const res = await login(formData);
         if (res.data) {
-            setUser(res.data.user);
-            setToken(res.token);
+            setSession({
+                user: res.data.user,
+                token: res.token
+            });
             sessionStorage.setItem("token", res.token);
-            // TODO: redirect to dashboard
+            callback();
             return;
         }
     }
 
-    const logOut = () => {
-        setUser(null);
-        setToken(null);
+    const logOut = (callback: () => void) => {
+        setSession(null);
         sessionStorage.removeItem("token");
-        // TODO: redirect to login
+        callback();
     }
 
     return <AuthContext.Provider value={{
-        logIn, logOut, session: {
-            user, token
-        }
+        logIn, logOut, session
     }}>
         {children}
     </AuthContext.Provider>

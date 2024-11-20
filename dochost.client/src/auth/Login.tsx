@@ -1,15 +1,24 @@
 ﻿import {SubmitHandler, useForm} from "react-hook-form";
 import {LoginInput} from "../core/contracts/auth.ts";
+import {useAuth} from "./AuthContext.tsx";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const Login = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const {logIn} = useAuth();
     const {
         register,
         handleSubmit,
-        formState: { errors }
+        formState: {errors}
     } = useForm<LoginInput>();
 
+    const from = location.state?.from?.pathname || "/dashboard"
+
     const onSubmit: SubmitHandler<LoginInput> = (formData) => {
-        // todo: call login endpoint
+        logIn(formData, () => {
+            navigate(from, {replace: true});
+        })
     }
 
     return (
