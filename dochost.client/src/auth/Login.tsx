@@ -1,9 +1,5 @@
 ﻿import {SubmitHandler, useForm} from "react-hook-form";
-
-type LoginInput = {
-    email: string
-    password: string
-}
+import {LoginInput} from "../core/contracts/auth.ts";
 
 const Login = () => {
     const {
