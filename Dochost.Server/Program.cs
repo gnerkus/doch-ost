@@ -48,8 +48,8 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
         return forecast;
     })
     .WithName("GetWeatherForecast")
-    .WithOpenApi();
-    // .RequireAuthorization();
+    .WithOpenApi()
+    .RequireAuthorization();
 
 
 app.Run();
