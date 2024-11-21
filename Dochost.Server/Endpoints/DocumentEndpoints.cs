@@ -4,16 +4,33 @@ namespace Dochost.Server.Endpoints
 {
     public static class DocumentEndpoints
     {
+        private static readonly string[] PermittedExtensions = [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
+        
         [Authorize]
-        private static async Task<IResult> UploadFile(IFormFile file) {
-            if (file.Length <= 0) return TypedResults.BadRequest("Invalid file.");
-            var filePath = Path.Combine(Path.GetTempPath(), "Dochost", "Uploads",
-                file.FileName);
+        private static async Task<IResult> UploadFileAsync(IFormFile formFile, IConfiguration 
+            config) {
+            if (formFile.Length <= 0) return TypedResults.BadRequest("Invalid file.");
+            
+            var ext = Path.GetExtension(formFile.FileName).ToLowerInvariant();
+            if (string.IsNullOrEmpty(ext) || !PermittedExtensions.Contains(ext))
+            {
+                return TypedResults.BadRequest("File type not permitted");
+            }
 
-            await using var stream = new FileStream(filePath, FileMode.Create);
-            await file.CopyToAsync(stream);
+            var fileSizeLimit = config.GetValue<long>("FileSizeLimit");
+            var size = formFile.Length;
 
-            return TypedResults.Ok(new { FilePath = filePath });
+            if (size > fileSizeLimit)
+            {
+                return TypedResults.UnprocessableEntity("File too large");
+            }
+            
+            var filePath = Path.GetTempFileName();
+
+            await using var stream = File.Create(filePath);
+            await formFile.CopyToAsync(stream);
+
+            return TypedResults.Ok(new { FilePath = filePath, size });
         }
 
         [Authorize]
@@ -32,7 +49,7 @@ namespace Dochost.Server.Endpoints
         public static void RegisterDocumentEndpoints(this WebApplication app)
         {
             var documentGroup = app.MapGroup("/documents");
-            documentGroup.MapPost("/upload", UploadFile);
+            documentGroup.MapPost("/upload", UploadFileAsync);
             documentGroup.MapGet("/download/{filename}", DownloadFile);
         }
     }
