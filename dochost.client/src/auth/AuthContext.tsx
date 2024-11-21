@@ -32,8 +32,8 @@ const AuthProvider = ({children}) => {
                 token,
             });
             attachToken(token);
-            setLoadingInitial(false);
         }
+        setLoadingInitial(false);
 
     }, [session?.user]);
 
