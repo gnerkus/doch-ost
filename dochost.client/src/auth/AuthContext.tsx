@@ -1,8 +1,10 @@
-﻿import {createContext, useContext, useState} from "react";
+﻿import {createContext, useContext, useEffect, useMemo, useState} from "react";
 import {ISession, LoginInput} from "../core/contracts/auth.ts";
 import {login} from "../core/http/api.ts";
+import {attachToken} from "../core/http/axiosInstance.ts";
 
 type IAuthContext = {
+    loading: boolean
     session: ISession | null
     logIn: (formData: LoginInput, callback: () => void) => void
     logOut: (callback: () => void) => void
@@ -13,20 +15,38 @@ const AuthContext = createContext<IAuthContext>({
     },
     logOut: () => {
     },
-    session: null
+    session: null,
+    loading: true
 });
 
 const AuthProvider = ({children}) => {
     const [session, setSession] = useState<ISession | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
+
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        if (token) {
+            setSession({
+                user: session?.user || null,
+                token,
+            });
+            attachToken(token);
+            setLoadingInitial(false);
+        }
+
+    }, [session?.user]);
 
     const logIn = async (formData: LoginInput, callback: () => void) => {
         const res = await login(formData);
-        if (res) {
+        if (res?.accessToken) {
             setSession({
                 user: res.user,
                 token: res.accessToken
             });
+            attachToken(res.accessToken);
             sessionStorage.setItem("token", res.accessToken);
+            setLoading(false);
             callback();
             return;
         }
@@ -38,10 +58,14 @@ const AuthProvider = ({children}) => {
         callback();
     }
 
-    return <AuthContext.Provider value={{
-        logIn, logOut, session
-    }}>
-        {children}
+    const authValue = useMemo(() => {
+        return {
+            logIn, logOut, session, loading
+        }
+    }, [session, loading]);
+
+    return <AuthContext.Provider value={authValue}>
+        {!loadingInitial && children}
     </AuthContext.Provider>
 }
 

@@ -14,8 +14,6 @@ function App() {
     return (
         <AuthProvider>
             <QueryClientProvider client={queryClient}>
-                <Dashboard/>
-
                 <Routes>
                     <Route element={<Layout/>}>
                         <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
