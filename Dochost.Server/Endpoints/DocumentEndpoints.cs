@@ -64,7 +64,7 @@ namespace Dochost.Server.Endpoints
         public static void RegisterDocumentEndpoints(this WebApplication app)
         {
             var documentGroup = app.MapGroup("/documents");
-            documentGroup.MapPost("/upload", UploadFileAsync);
+            documentGroup.MapPost("/upload", UploadFileAsync).DisableAntiforgery();
             documentGroup.MapGet("/download/{filename}", DownloadFile);
         }
     }
