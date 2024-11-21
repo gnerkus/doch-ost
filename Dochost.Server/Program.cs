@@ -1,6 +1,7 @@
 using Core.Entities;
 using Data;
 using Dochost.Server;
+using Dochost.Server.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,5 +52,6 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
     .WithOpenApi()
     .RequireAuthorization();
 
+app.RegisterDocumentEndpoints();
 
 app.Run();
