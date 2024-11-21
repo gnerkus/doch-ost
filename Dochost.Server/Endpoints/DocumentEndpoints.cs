@@ -3,6 +3,7 @@ using Core.Contracts;
 using Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Dochost.Server.Endpoints
 {
@@ -12,7 +13,8 @@ namespace Dochost.Server.Endpoints
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
 
         [Authorize]
-        private static async Task<IResult> UploadFileAsync(List<IFormFile> formFiles, IConfiguration
+        private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles, 
+        IConfiguration
                 config, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
             UserManager<ApplicationUser> userManager)
         {
