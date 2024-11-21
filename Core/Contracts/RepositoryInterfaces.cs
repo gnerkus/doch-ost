@@ -7,5 +7,7 @@ namespace Core.Contracts
         Task<IEnumerable<DocumentInfo>> GetAllDocumentsAsync(string ownerId, bool trackChanges);
         void CreateDocument(string ownerId, DocumentInfo documentInfo);
         void DeleteDocument(DocumentInfo documentInfo);
+
+        Task SaveAsync();
     }
 }

@@ -13,7 +13,7 @@ namespace Dochost.Server.Endpoints
         private static async Task<IResult> UploadFileAsync(IFormFile formFile, IConfiguration 
             config, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user)
         {
-            var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var ownerId = user.FindFirstValue(ClaimTypes.Name);
             if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
             
             if (formFile.Length <= 0) return TypedResults.BadRequest("Invalid file.");
@@ -37,13 +37,15 @@ namespace Dochost.Server.Endpoints
             await using var stream = File.Create(filePath);
             await formFile.CopyToAsync(stream);
             
-            documentInfoRepository.CreateDocument(ownerId, new DocumentInfo()
+            documentInfoRepository.CreateDocument(ownerId, new DocumentInfo
             {
+                DisplayName = formFile.FileName,
                 FileName = filePath,
                 FileExt = ext,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             });
+            await documentInfoRepository.SaveAsync();
 
             return TypedResults.Ok();
         }
@@ -61,9 +63,20 @@ namespace Dochost.Server.Endpoints
             var fileBytes = await File.ReadAllBytesAsync(filePath);
             return TypedResults.File(fileBytes, "application/octet-stream", filename);
         }
+
+        [Authorize]
+        private static async Task<IResult> GetDocumentInfosAsync(IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user)
+        {
+            var ownerId = user.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
+
+            var documentInfos = await documentInfoRepository.GetAllDocumentsAsync(ownerId, false);
+            return TypedResults.Ok(documentInfos.Select(info => info.ToDto()));
+        }
         public static void RegisterDocumentEndpoints(this WebApplication app)
         {
             var documentGroup = app.MapGroup("/documents");
+            documentGroup.MapGet("/", GetDocumentInfosAsync);
             documentGroup.MapPost("/upload", UploadFileAsync).DisableAntiforgery();
             documentGroup.MapGet("/download/{filename}", DownloadFile);
         }

@@ -30,5 +30,10 @@ namespace Data.Repositories
         {
             dbContext.Set<DocumentInfo>().Remove(documentInfo);
         }
+
+        public async Task SaveAsync()
+        {
+            await dbContext.SaveChangesAsync();
+        }
     }
 }
