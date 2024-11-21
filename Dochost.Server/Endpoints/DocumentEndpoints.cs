@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Core.Contracts;
+using Core.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Dochost.Server.Endpoints
 {
@@ -8,7 +11,11 @@ namespace Dochost.Server.Endpoints
         
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFile formFile, IConfiguration 
-            config) {
+            config, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user)
+        {
+            var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
+            
             if (formFile.Length <= 0) return TypedResults.BadRequest("Invalid file.");
             
             var ext = Path.GetExtension(formFile.FileName).ToLowerInvariant();
@@ -16,7 +23,7 @@ namespace Dochost.Server.Endpoints
             {
                 return TypedResults.BadRequest("File type not permitted");
             }
-
+            
             var fileSizeLimit = config.GetValue<long>("FileSizeLimit");
             var size = formFile.Length;
 
@@ -29,8 +36,16 @@ namespace Dochost.Server.Endpoints
 
             await using var stream = File.Create(filePath);
             await formFile.CopyToAsync(stream);
+            
+            documentInfoRepository.CreateDocument(ownerId, new DocumentInfo()
+            {
+                FileName = filePath,
+                FileExt = ext,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            });
 
-            return TypedResults.Ok(new { FilePath = filePath, size });
+            return TypedResults.Ok();
         }
 
         [Authorize]
