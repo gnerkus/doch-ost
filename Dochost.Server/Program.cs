@@ -1,6 +1,7 @@
+using Core.Contracts;
 using Core.Entities;
 using Data;
-using Dochost.Server;
+using Data.Repositories;
 using Dochost.Server.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,8 @@ builder.Services.AddDbContext<ApplicationDbContext>();
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddScoped<IDocumentInfoRepository, DocumentInfoRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
