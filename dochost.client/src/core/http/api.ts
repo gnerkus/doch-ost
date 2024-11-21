@@ -28,3 +28,23 @@ export const fetchDocuments = async () => {
 
     return response.data;
 }
+
+export const uploadFiles = async (formData, callback) => {
+    const requestBody = new FormData();
+
+    for (const formDatum of formData.files) {
+        requestBody.append("formFiles", formDatum);
+    }
+
+    const response = await axiosInstance.post("api/documents/upload", requestBody, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    });
+
+    if (response.status !== 200) {
+        throw new Error("Network response was not ok")
+    }
+
+    callback();
+}
