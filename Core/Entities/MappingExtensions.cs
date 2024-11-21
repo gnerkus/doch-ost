@@ -7,7 +7,6 @@ namespace Core.Entities
         public static DocumentInfoDto ToDto(this DocumentInfo documentInfo)
         {
             if (documentInfo != null)
-            {
                 return new DocumentInfoDto
                 {
                     Id = documentInfo.Id,
@@ -17,7 +16,6 @@ namespace Core.Entities
                     CreatedAt = documentInfo.CreatedAt,
                     UpdatedAt = documentInfo.UpdatedAt
                 };
-            }
 
             return null;
         }
