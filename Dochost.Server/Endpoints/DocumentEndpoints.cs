@@ -12,37 +12,41 @@ namespace Dochost.Server.Endpoints
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
 
         [Authorize]
-        private static async Task<IResult> UploadFileAsync(IFormFile formFile, IConfiguration
+        private static async Task<IResult> UploadFileAsync(List<IFormFile> formFiles, IConfiguration
                 config, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
             UserManager<ApplicationUser> userManager)
         {
             var ownerId = userManager.GetUserId(user);
             if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
 
-            if (formFile.Length <= 0) return TypedResults.BadRequest("Invalid file.");
-
-            var ext = Path.GetExtension(formFile.FileName).ToLowerInvariant();
-            if (string.IsNullOrEmpty(ext) || !PermittedExtensions.Contains(ext))
-                return TypedResults.BadRequest("File type not permitted");
-
-            var fileSizeLimit = config.GetValue<long>("FileSizeLimit");
-            var size = formFile.Length;
-
-            if (size > fileSizeLimit) return TypedResults.UnprocessableEntity("File too large");
-
-            var filePath = Path.GetTempFileName();
-
-            await using var stream = File.Create(filePath);
-            await formFile.CopyToAsync(stream);
-
-            documentInfoRepository.CreateDocument(ownerId, new DocumentInfo
+            foreach (var formFile in formFiles)
             {
-                DisplayName = formFile.FileName,
-                FileName = filePath,
-                FileExt = ext,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
-            });
+                if (formFile.Length <= 0) return TypedResults.BadRequest("Invalid file.");
+
+                var ext = Path.GetExtension(formFile.FileName).ToLowerInvariant();
+                if (string.IsNullOrEmpty(ext) || !PermittedExtensions.Contains(ext))
+                    return TypedResults.BadRequest("File type not permitted");
+                
+                var fileSizeLimit = config.GetValue<long>("FileSizeLimit");
+                var size = formFile.Length;
+
+                if (size > fileSizeLimit) return TypedResults.UnprocessableEntity("File too large");
+
+                var filePath = Path.GetTempFileName();
+
+                await using var stream = File.Create(filePath);
+                await formFile.CopyToAsync(stream);
+                
+                documentInfoRepository.CreateDocument(ownerId, new DocumentInfo
+                {
+                    DisplayName = formFile.FileName,
+                    FileName = filePath,
+                    FileExt = ext,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                });
+            }
+            
             await documentInfoRepository.SaveAsync();
 
             return TypedResults.Ok();
