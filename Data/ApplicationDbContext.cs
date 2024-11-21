@@ -7,6 +7,8 @@ namespace Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : IdentityDbContext<ApplicationUser>(options)
 {
+    public DbSet<DocumentInfo>? DocumentInfos { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         const Environment.SpecialFolder folder = Environment.SpecialFolder.LocalApplicationData;
