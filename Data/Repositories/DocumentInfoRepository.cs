@@ -18,6 +18,17 @@ namespace Data.Repositories
             return await query.OrderBy(d => d.FileName).ToListAsync();
         }
 
+        public async Task<DocumentInfo?> GetDocumentAsync(string ownerId, Guid docId, bool trackChanges)
+        {
+            var query = dbContext
+                .Set<DocumentInfo>()
+                .Where(d => d.Id.Equals(docId) && d.OwnerId != null && d.OwnerId.Equals(ownerId));
+            
+            if (!trackChanges) query.AsNoTracking();
+
+            return await query.SingleOrDefaultAsync();
+        }
+
         public void CreateDocument(string ownerId, DocumentInfo documentInfo)
         {
             documentInfo.OwnerId = ownerId;

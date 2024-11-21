@@ -53,14 +53,23 @@ namespace Dochost.Server.Endpoints
         }
 
         [Authorize]
-        private static async Task<IResult> DownloadFile(string filename)
+        private static async Task<IResult> DownloadFile(Guid fileId, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
+            UserManager<ApplicationUser> userManager)
         {
-            var filePath = Path.Combine(Path.GetTempPath(), "Dochost", "Uploads",
-                filename);
+            var ownerId = userManager.GetUserId(user);
+            if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
+
+            var documentInfo = await documentInfoRepository.GetDocumentAsync(ownerId, fileId,
+                false);
+
+            if (documentInfo == null)
+                return TypedResults.NotFound(fileId);
+
+            var filePath = documentInfo.FileName;
             if (!File.Exists(filePath)) return TypedResults.NotFound("File not found");
 
             var fileBytes = await File.ReadAllBytesAsync(filePath);
-            return TypedResults.File(fileBytes, "application/octet-stream", filename);
+            return TypedResults.File(fileBytes, "application/octet-stream", documentInfo.DisplayName);
         }
 
         [Authorize]
@@ -80,7 +89,7 @@ namespace Dochost.Server.Endpoints
             var documentGroup = app.MapGroup("/documents");
             documentGroup.MapGet("/", GetDocumentInfosAsync);
             documentGroup.MapPost("/upload", UploadFileAsync).DisableAntiforgery();
-            documentGroup.MapGet("/download/{filename}", DownloadFile);
+            documentGroup.MapGet("/download/{fileId:guid}", DownloadFile);
         }
     }
 }
