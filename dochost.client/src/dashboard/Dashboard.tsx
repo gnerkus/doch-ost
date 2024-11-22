@@ -1,5 +1,5 @@
 ﻿import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {fetchDocuments, uploadFiles} from "../core/http/api.ts";
+import {downloadFile, fetchDocuments, uploadFiles} from "../core/http/api.ts";
 import {useAuth} from "../auth/AuthContext.tsx";
 import {useForm} from "react-hook-form";
 
@@ -46,7 +46,13 @@ function Dashboard() {
             <div>
                 {data.map(documentInfo => {
                     return (
-                        <p>{documentInfo.fileName}</p>
+                        <div>
+                            <p>{documentInfo.fileName}</p>
+                            <button onClick={() => {
+                                downloadFile(documentInfo.id, documentInfo.fileExt, documentInfo.fileName)
+                            }}>Download</button>
+                        </div>
+
                     )
                 })}
             </div>

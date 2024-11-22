@@ -48,3 +48,38 @@ export const uploadFiles = async (formData, callback) => {
 
     callback();
 }
+
+export const downloadFile = async (fileId: string, fileExt: string, fileName: string) => {
+    let contentType = "image/png"
+
+    switch (fileExt) {
+        case ".pdf":
+            contentType = "application/pdf"
+            break;
+        case ".jpg":
+            contentType = "image/jpeg"
+            break;
+    }
+
+    const response = await axiosInstance.get(`api/documents/download/${fileId}`, {
+        headers: {
+            "Content-Type": contentType
+        },
+        responseType: "blob"
+    });
+
+    if (response.status !== 200) {
+        throw new Error("Network response was not ok")
+    }
+
+    const url = window.URL.createObjectURL(new Blob([response.data], {type: contentType}));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName || "downloaded-file";
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+}

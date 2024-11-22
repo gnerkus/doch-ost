@@ -70,8 +70,20 @@ namespace Dochost.Server.Endpoints
             var filePath = documentInfo.FileName;
             if (!File.Exists(filePath)) return TypedResults.NotFound("File not found");
 
-            var fileBytes = await File.ReadAllBytesAsync(filePath);
-            return TypedResults.File(fileBytes, "application/octet-stream", documentInfo.DisplayName);
+            var memory = new MemoryStream();
+            await using var stream = new FileStream(filePath, FileMode.Open);
+            await stream.CopyToAsync(memory);
+            memory.Position = 0;
+
+            var contentType = documentInfo.FileExt switch
+            {
+                ".png" => "image/png",
+                ".jpg" => "image/jpeg",
+                "" => "application/octet-stream",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            return TypedResults.File(memory, contentType, documentInfo.DisplayName);
         }
 
         [Authorize]
