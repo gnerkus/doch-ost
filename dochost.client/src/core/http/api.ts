@@ -83,3 +83,17 @@ export const downloadFile = async (fileId: string, fileExt: string, fileName: st
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 }
+
+export const getShareableLink = async (fileId: string) => {
+    const response = await axiosInstance.get(`api/documents/share/${fileId}`, {
+        headers: {
+            "Content-Type": "text/plain"
+        }
+    });
+
+    if (response.status !== 200) {
+        throw new Error("Network response was not ok")
+    }
+
+    return response.data;
+}
