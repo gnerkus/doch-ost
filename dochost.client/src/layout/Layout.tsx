@@ -1,10 +1,14 @@
 ﻿import {Outlet} from "react-router-dom";
 import AuthStatus from "./AuthStatus.tsx";
+import {IAuthContext} from "../core/contracts/auth.ts";
 
-function Layout( { auth }) {
-    // TODO: use flex column for the parent div so navigation is always displayed on top
+type LayoutProps = {
+    auth: IAuthContext
+}
+
+function Layout( { auth }: LayoutProps) {
     return (
-        <div className="stuff">
+        <div className="">
             <AuthStatus auth={auth}/>
             <Outlet/>
         </div>

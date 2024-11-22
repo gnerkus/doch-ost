@@ -1,29 +1,30 @@
 ﻿import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {downloadFile, fetchDocuments, getShareableLink, uploadFiles} from "../core/http/api.ts";
-import {useAuth} from "../auth/AuthContext.tsx";
 import {useForm} from "react-hook-form";
 import {useState} from "react";
+import {useAuth} from "../auth/useAuth.ts";
+import {DocumentInfo, FileUploadInput} from "../core/contracts/document.ts";
 
 function Dashboard() {
-    const [shareLink, setShareLink] = useState({});
+    const [shareLink, setShareLink] = useState<Record<string, string>>({});
     const { session } = useAuth();
     const {
         isPending, error, data
-    } = useQuery({
+    } = useQuery<DocumentInfo[]>({
         queryKey: ['documents'],
         queryFn: fetchDocuments,
         enabled: !!session?.token
     });
     const queryClient = useQueryClient();
-    const { register, handleSubmit, formState: {errors} } = useForm();
+    const { register, handleSubmit, formState: {errors} } = useForm<FileUploadInput>();
 
-    const onSubmit = (formData) => {
-        uploadFiles(formData, () => {
-            queryClient.invalidateQueries({ queryKey: ['documents']})
+    const onSubmit = async (formData: FileUploadInput) => {
+        await uploadFiles(formData, async () => {
+            await queryClient.invalidateQueries({ queryKey: ['documents']})
         });
     }
 
-    const getLink = async (fileId) => {
+    const getLink = async (fileId: string) => {
         const link = await getShareableLink(fileId);
         setShareLink({
             ...shareLink,
@@ -37,7 +38,7 @@ function Dashboard() {
 
     return (
         <>
-            <h1>Doch Ost</h1>
+            <h1>Files</h1>
             <div>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div>

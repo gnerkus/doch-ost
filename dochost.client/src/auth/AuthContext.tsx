@@ -1,28 +1,14 @@
-﻿import {createContext, useContext, useEffect, useMemo, useState} from "react";
+﻿import {ReactElement, useEffect, useMemo, useState} from "react";
 import {ISession, LoginInput} from "../core/contracts/auth.ts";
 import {login, register} from "../core/http/api.ts";
 import {attachToken} from "../core/http/axiosInstance.ts";
+import { AuthContext } from "./useAuth.ts";
 
-type IAuthContext = {
-    loading: boolean
-    session: ISession | null
-    logIn: (formData: LoginInput, callback: () => void) => void
-    signUp: (formData: LoginInput, callback: () => void) => void
-    logOut: (callback: () => void) => void
+type AuthProviderProps = {
+    children: ReactElement
 }
 
-const AuthContext = createContext<IAuthContext>({
-    logIn: () => {
-    },
-    logOut: () => {
-    },
-    signUp: () => {
-    },
-    session: null,
-    loading: true
-});
-
-const AuthProvider = ({children}) => {
+const AuthProvider = ({children}: AuthProviderProps) => {
     const [session, setSession] = useState<ISession | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
@@ -81,7 +67,3 @@ const AuthProvider = ({children}) => {
 }
 
 export default AuthProvider;
-
-export const useAuth = () => {
-    return useContext(AuthContext);
-}

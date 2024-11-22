@@ -1,6 +1,11 @@
 ﻿import {useNavigate} from "react-router-dom";
+import {IAuthContext} from "../core/contracts/auth.ts";
 
-function AuthStatus({auth}) {
+type AuthStatusProps = {
+    auth: IAuthContext
+}
+
+function AuthStatus({auth}: AuthStatusProps) {
     const navigate = useNavigate();
 
     // TODO: if logged in, show full navigation. Otherwise, show no navigation

@@ -1,8 +1,8 @@
 ﻿import {SubmitHandler, useForm} from "react-hook-form";
 import {LoginInput} from "../core/contracts/auth.ts";
-import {useAuth} from "./AuthContext.tsx";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useState} from "react";
+import {useAuth} from "./useAuth.ts";
 
 const Login = () => {
     const navigate = useNavigate();
