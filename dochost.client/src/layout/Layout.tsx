@@ -4,7 +4,7 @@ import AuthStatus from "./AuthStatus.tsx";
 function Layout( { auth }) {
     // TODO: use flex column for the parent div so navigation is always displayed on top
     return (
-        <div>
+        <div className="stuff">
             <AuthStatus auth={auth}/>
             <Outlet/>
         </div>

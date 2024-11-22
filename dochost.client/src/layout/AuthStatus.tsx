@@ -6,7 +6,7 @@ function AuthStatus({auth}) {
     // TODO: if logged in, show full navigation. Otherwise, show no navigation
     // TODO: use <Link /> to link to relevant pages
     if (!auth.session) {
-        return <p>You are not logged in.</p>;
+        return null;
     }
 
     return (

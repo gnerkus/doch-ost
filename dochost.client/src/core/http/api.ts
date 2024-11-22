@@ -15,6 +15,20 @@ export const login = async (requestBody: LoginInput) => {
   return response.data;
 }
 
+export const register = async (requestBody: LoginInput) => {
+    const response = await axiosInstance.post("api/register", requestBody, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (response.status !== 200) {
+        throw new Error("Network response was not ok")
+    }
+
+    return response.data;
+}
+
 export const fetchDocuments = async () => {
     const response = await axiosInstance.get("api/documents", {
         headers: {

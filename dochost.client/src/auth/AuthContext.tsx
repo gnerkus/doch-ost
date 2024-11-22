@@ -1,12 +1,13 @@
 ﻿import {createContext, useContext, useEffect, useMemo, useState} from "react";
 import {ISession, LoginInput} from "../core/contracts/auth.ts";
-import {login} from "../core/http/api.ts";
+import {login, register} from "../core/http/api.ts";
 import {attachToken} from "../core/http/axiosInstance.ts";
 
 type IAuthContext = {
     loading: boolean
     session: ISession | null
     logIn: (formData: LoginInput, callback: () => void) => void
+    signUp: (formData: LoginInput, callback: () => void) => void
     logOut: (callback: () => void) => void
 }
 
@@ -14,6 +15,8 @@ const AuthContext = createContext<IAuthContext>({
     logIn: () => {
     },
     logOut: () => {
+    },
+    signUp: () => {
     },
     session: null,
     loading: true
@@ -52,6 +55,14 @@ const AuthProvider = ({children}) => {
         }
     }
 
+    const signUp = async (formData: LoginInput, callback: () => void) => {
+        const res = await register(formData);
+        if (res) {
+            callback();
+            return;
+        }
+    }
+
     const logOut = (callback: () => void) => {
         setSession(null);
         sessionStorage.removeItem("token");
@@ -60,7 +71,7 @@ const AuthProvider = ({children}) => {
 
     const authValue = useMemo(() => {
         return {
-            logIn, logOut, session, loading
+            logIn, logOut, session, loading, signUp
         }
     }, [session, loading]);
 
