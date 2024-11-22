@@ -1,9 +1,10 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 using Core.Contracts;
 using Core.Entities;
+using Dochost.Encryption;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Dochost.Server.Endpoints
 {
@@ -11,6 +12,8 @@ namespace Dochost.Server.Endpoints
     {
         private static readonly string[] PermittedExtensions =
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
+
+        private static readonly int ExpirationDurationMs = 1000 * 60 * 5; // 5 minutes
 
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles, 
@@ -55,7 +58,7 @@ namespace Dochost.Server.Endpoints
         }
 
         [Authorize]
-        private static async Task<IResult> DownloadFile(Guid fileId, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
+        private static async Task<IResult> DownloadFileAsync(Guid fileId, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
             UserManager<ApplicationUser> userManager)
         {
             var ownerId = userManager.GetUserId(user);
@@ -87,6 +90,22 @@ namespace Dochost.Server.Endpoints
         }
 
         [Authorize]
+        private static async Task<IResult> GetSharedLinkAsync(Guid fileId, ClaimsPrincipal user,
+            UserManager<ApplicationUser> userManager)
+        {
+            var ownerId = userManager.GetUserId(user);
+            if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
+            
+            var secret = Environment.GetEnvironmentVariable("DCH_SECRET");
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new Exception("Missing configuration");
+            }
+            var base64String = await TokenGenerator.EncryptUserFile(ownerId, fileId, secret);
+            return TypedResults.Ok(base64String);
+        }
+
+        [Authorize]
         private static async Task<IResult> GetDocumentInfosAsync(
             IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
             UserManager<ApplicationUser> userManager)
@@ -98,12 +117,58 @@ namespace Dochost.Server.Endpoints
             return TypedResults.Ok(documentInfos.Select(info => info.ToDto()));
         }
 
+        [AllowAnonymous]
+        private static async Task<IResult> DownloadSharedFileAsync(string downloadToken, IDocumentInfoRepository documentInfoRepository)
+        {   
+            var secret = Environment.GetEnvironmentVariable("DCH_SECRET");
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new Exception("Missing configuration");
+            }
+
+            var decryptedResult = await TokenGenerator.DecryptUserFile(downloadToken, secret);
+            var stringDate = DateTime.ParseExact(decryptedResult.DateString, "yyyy-MM-dd HH:mm:ss,fff", CultureInfo
+                .InvariantCulture);
+            var duration = DateTime.Now.Subtract(stringDate);
+            if (duration.Milliseconds > ExpirationDurationMs)
+            {
+                return TypedResults.NotFound();
+            }
+            
+            var documentInfo = await documentInfoRepository.GetDocumentAsync(decryptedResult
+                .UserId, new Guid(decryptedResult.FileId),
+                false);
+
+            if (documentInfo == null)
+                return TypedResults.NotFound();
+
+            var filePath = documentInfo.FileName;
+            if (!File.Exists(filePath)) return TypedResults.NotFound("File not found");
+            
+            var memory = new MemoryStream();
+            await using var stream = new FileStream(filePath, FileMode.Open);
+            await stream.CopyToAsync(memory);
+            memory.Position = 0;
+
+            var contentType = documentInfo.FileExt switch
+            {
+                ".png" => "image/png",
+                ".jpg" => "image/jpeg",
+                "" => "application/octet-stream",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            return Results.File(filePath, contentType, documentInfo.DisplayName);
+        }
+
         public static void RegisterDocumentEndpoints(this WebApplication app)
         {
             var documentGroup = app.MapGroup("/documents");
             documentGroup.MapGet("/", GetDocumentInfosAsync);
             documentGroup.MapPost("/upload", UploadFileAsync).DisableAntiforgery();
-            documentGroup.MapGet("/download/{fileId:guid}", DownloadFile);
+            documentGroup.MapGet("/download/{fileId:guid}", DownloadFileAsync);
+            documentGroup.MapGet("/share/{fileId:guid}", GetSharedLinkAsync);
+            documentGroup.MapGet("/file/{downloadToken}", DownloadSharedFileAsync);
         }
     }
 }
