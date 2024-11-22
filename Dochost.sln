@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{2C1C8729-19A4-4290-9C73-0838EE38FFC7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dochost.Encryption", "Dochost.Encryption\Dochost.Encryption.csproj", "{27BC6C65-DA65-4C83-B6AD-6D1909EBBA0A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{2C1C8729-19A4-4290-9C73-0838EE38FFC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C1C8729-19A4-4290-9C73-0838EE38FFC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C1C8729-19A4-4290-9C73-0838EE38FFC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27BC6C65-DA65-4C83-B6AD-6D1909EBBA0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27BC6C65-DA65-4C83-B6AD-6D1909EBBA0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27BC6C65-DA65-4C83-B6AD-6D1909EBBA0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27BC6C65-DA65-4C83-B6AD-6D1909EBBA0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

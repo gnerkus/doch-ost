@@ -1,9 +1,11 @@
 ﻿import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {downloadFile, fetchDocuments, uploadFiles} from "../core/http/api.ts";
+import {downloadFile, fetchDocuments, getShareableLink, uploadFiles} from "../core/http/api.ts";
 import {useAuth} from "../auth/AuthContext.tsx";
 import {useForm} from "react-hook-form";
+import {useState} from "react";
 
 function Dashboard() {
+    const [shareLink, setShareLink] = useState({});
     const { session } = useAuth();
     const {
         isPending, error, data
@@ -18,6 +20,14 @@ function Dashboard() {
     const onSubmit = (formData) => {
         uploadFiles(formData, () => {
             queryClient.invalidateQueries({ queryKey: ['documents']})
+        });
+    }
+
+    const getLink = async (fileId) => {
+        const link = await getShareableLink(fileId);
+        setShareLink({
+            ...shareLink,
+            [fileId]: link
         });
     }
 
@@ -48,9 +58,13 @@ function Dashboard() {
                     return (
                         <div>
                             <p>{documentInfo.fileName}</p>
-                            <button onClick={() => {
-                                downloadFile(documentInfo.id, documentInfo.fileExt, documentInfo.fileName)
+                            <input type="text" value={shareLink[documentInfo.id] ? `https://localhost:7119/documents/file?share=${encodeURIComponent(shareLink[documentInfo.id])}` : ""} />
+                            <button onClick={async () => {
+                                await downloadFile(documentInfo.id, documentInfo.fileExt, documentInfo.fileName)
                             }}>Download</button>
+                            <button onClick={async () => {
+                                await getLink(documentInfo.id)
+                            }} >Share</button>
                         </div>
 
                     )
