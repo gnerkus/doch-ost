@@ -5,6 +5,7 @@ using Core.Entities;
 using Dochost.Encryption;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Dochost.Server.Endpoints
 {
@@ -13,7 +14,7 @@ namespace Dochost.Server.Endpoints
         private static readonly string[] PermittedExtensions =
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
 
-        private static readonly int ExpirationDurationMs = 1000 * 60 * 5; // 5 minutes
+        private const int ExpirationDurationMs = 1000 * 60 * 5; // 5 minutes
 
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles, 
@@ -118,7 +119,8 @@ namespace Dochost.Server.Endpoints
         }
 
         [AllowAnonymous]
-        private static async Task<IResult> DownloadSharedFileAsync(string downloadToken, IDocumentInfoRepository documentInfoRepository)
+        private static async Task<IResult> DownloadSharedFileAsync([FromQuery] string share, 
+        IDocumentInfoRepository documentInfoRepository)
         {   
             var secret = Environment.GetEnvironmentVariable("DCH_SECRET");
             if (string.IsNullOrEmpty(secret))
@@ -126,7 +128,7 @@ namespace Dochost.Server.Endpoints
                 throw new Exception("Missing configuration");
             }
 
-            var decryptedResult = await TokenGenerator.DecryptUserFile(downloadToken, secret);
+            var decryptedResult = await TokenGenerator.DecryptUserFile(share, secret);
             var stringDate = DateTime.ParseExact(decryptedResult.DateString, "yyyy-MM-dd HH:mm:ss,fff", CultureInfo
                 .InvariantCulture);
             var duration = DateTime.Now.Subtract(stringDate);
@@ -168,7 +170,7 @@ namespace Dochost.Server.Endpoints
             documentGroup.MapPost("/upload", UploadFileAsync).DisableAntiforgery();
             documentGroup.MapGet("/download/{fileId:guid}", DownloadFileAsync);
             documentGroup.MapGet("/share/{fileId:guid}", GetSharedLinkAsync);
-            documentGroup.MapGet("/file/{downloadToken}", DownloadSharedFileAsync);
+            documentGroup.MapGet("/file", DownloadSharedFileAsync);
         }
     }
 }
