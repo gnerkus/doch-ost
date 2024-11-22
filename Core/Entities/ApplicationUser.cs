@@ -2,8 +2,7 @@
 
 namespace Core.Entities
 {
-    public class ApplicationUser: IdentityUser
+    public class ApplicationUser : IdentityUser
     {
-        
     }
 }
