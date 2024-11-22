@@ -23,6 +23,7 @@
         <ProjectReference Include="..\dochost.client\dochost.client.esproj">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
         </ProjectReference>
+        <ProjectReference Include="..\Dochost.Encryption\Dochost.Encryption.csproj" />
     </ItemGroup>
 
 </Project>
