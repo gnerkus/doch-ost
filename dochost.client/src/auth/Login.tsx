@@ -22,11 +22,11 @@ const Login = () => {
             logIn(formData, () => {
                 navigate(from, {replace: true});
             })
+        } else {
+            signUp(formData, () => {
+                setIsLogIn(true);
+            });
         }
-
-        signUp(formData, () => {
-            setIsLogIn(true);
-        })
     }
 
     return (

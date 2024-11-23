@@ -78,7 +78,7 @@ export const downloadFile = async (fileId: string, fileExt: string, fileName: st
             break;
     }
 
-    const response = await axiosInstance.get(`api/documents/download/${fileId}`, {
+    const response = await axiosInstance.get(`api/documents/${fileId}/download`, {
         headers: {
             "Content-Type": contentType
         },
@@ -102,10 +102,27 @@ export const downloadFile = async (fileId: string, fileExt: string, fileName: st
 }
 
 export const getShareableLink = async (fileId: string) => {
-    const response = await axiosInstance.get(`api/documents/share/${fileId}`, {
+    const response = await axiosInstance.get(`api/documents/${fileId}/share`, {
         headers: {
             "Content-Type": "text/plain"
         }
+    });
+
+    if (response.status !== 200) {
+        throw new Error("Network response was not ok")
+    }
+
+    return response.data;
+}
+
+export const getPreview = async (fileId?: string) => {
+    if (!fileId) return;
+
+    const response = await axiosInstance.get(`api/documents/${fileId}/preview`, {
+        headers: {
+            "Content-Type": "image/png"
+        },
+        responseType: "blob"
     });
 
     if (response.status !== 200) {

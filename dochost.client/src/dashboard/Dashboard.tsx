@@ -1,11 +1,28 @@
 ﻿import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {downloadFile, fetchDocuments, getShareableLink, uploadFiles} from "../core/http/api.ts";
+import {
+    downloadFile,
+    fetchDocuments,
+    getPreview,
+    getShareableLink,
+    uploadFiles
+} from "../core/http/api.ts";
 import React, {ChangeEvent, useMemo, useRef, useState} from "react";
 import {useAuth} from "../auth/useAuth.ts";
 import {DocumentInfo} from "../core/contracts/document.ts";
 import LoadingIcon from "../core/components/LoadingIcon.tsx";
 import UIIcons from "../core/components/UIIcons.tsx";
 import FileIcons from "../core/components/FileIcons.tsx";
+
+const blobToBase64 = function(blob) {
+    return new Promise( resolve=>{
+        const reader = new FileReader();
+        reader.onload = function() {
+            const dataUrl = reader.result;
+            resolve(dataUrl);
+        };
+        reader.readAsDataURL(blob);
+    });
+}
 
 function Dashboard() {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -19,6 +36,19 @@ function Dashboard() {
         queryFn: fetchDocuments,
         enabled: !!session?.token
     });
+
+    const {
+        data: previewData
+    } = useQuery({
+        queryKey: ['preview', currentDocInfo?.id || ''],
+        queryFn: async () => {
+            const res = await getPreview(currentDocInfo?.id);
+            const base64 = await blobToBase64(res);
+            return base64;
+        },
+        enabled: !!session?.token && !!currentDocInfo?.id
+    })
+
     const queryClient = useQueryClient();
 
     const getLink = async (fileId: string) => {
@@ -103,6 +133,14 @@ function Dashboard() {
                         </button>
                     </div>
                     <div>
+                        {currentDocInfo ? (
+                            <img
+                                className="w-5/6 m-auto p-4"
+                                src={previewData}
+                                alt="preview"/>
+                        ) : (
+                            <div>placeholder</div>
+                        )}
                     </div>
                     <div>
 
