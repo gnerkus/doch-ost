@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using Core.Contracts;
 using Core.Entities;
-using Dochost.Aspose;
 using Dochost.Encryption;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -109,7 +108,7 @@ namespace Dochost.Server.Endpoints
                 _ => throw new ArgumentOutOfRangeException()
             };
             
-            return TypedResults.File(memory, contentType, documentInfo.DisplayName);
+            return TypedResults.File(memory, contentType, documentInfo.DisplayName, documentInfo.UpdatedAt);
         }
 
         [Authorize]
@@ -185,13 +184,38 @@ namespace Dochost.Server.Endpoints
             return Results.File(filePath, contentType, documentInfo.DisplayName);
         }
 
+        [Authorize]
+        private static async Task<IResult> GetPreviewAsync(Guid fileId, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
+            UserManager<ApplicationUser> userManager)
+        {
+            var ownerId = userManager.GetUserId(user);
+            if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
+
+            var documentInfo = await documentInfoRepository.GetDocumentAsync(ownerId, fileId,
+                false);
+
+            if (documentInfo == null)
+                return TypedResults.NotFound(fileId);
+
+            var filePath = documentInfo.PreviewUrl;
+            if (!File.Exists(filePath)) return TypedResults.NotFound("File not found");
+            
+            var memory = new MemoryStream();
+            await using var stream = new FileStream(filePath, FileMode.Open);
+            await stream.CopyToAsync(memory);
+            memory.Position = 0;
+            
+            return TypedResults.File(memory, "image/png", documentInfo.DisplayName);
+        }
+
         public static void RegisterDocumentEndpoints(this WebApplication app)
         {
             var documentGroup = app.MapGroup("/documents");
             documentGroup.MapGet("/", GetDocumentInfosAsync);
             documentGroup.MapPost("/upload", UploadFileAsync).DisableAntiforgery();
-            documentGroup.MapGet("/download/{fileId:guid}", DownloadFileAsync);
-            documentGroup.MapGet("/share/{fileId:guid}", GetSharedLinkAsync);
+            documentGroup.MapGet("/{fileId:guid}/download", DownloadFileAsync);
+            documentGroup.MapGet("/{fileId:guid}/preview", GetPreviewAsync);
+            documentGroup.MapGet("/{fileId:guid}/share", GetSharedLinkAsync);
             documentGroup.MapGet("/file", DownloadSharedFileAsync);
         }
     }
