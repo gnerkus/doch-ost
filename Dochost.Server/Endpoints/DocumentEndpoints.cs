@@ -183,7 +183,7 @@ namespace Dochost.Server.Endpoints
 
             var documentInfo = await documentInfoRepository.GetDocumentAsync(decryptedResult
                     .UserId, new Guid(decryptedResult.FileId),
-                false);
+                true);
 
             if (documentInfo == null)
                 return TypedResults.NotFound();
@@ -195,6 +195,9 @@ namespace Dochost.Server.Endpoints
             await using var stream = new FileStream(filePath, FileMode.Open);
             await stream.CopyToAsync(memory);
             memory.Position = 0;
+            
+            documentInfo.DownloadCount += 1;
+            await documentInfoRepository.SaveAsync();
 
             var contentType = documentInfo.FileExt switch
             {
