@@ -47,6 +47,8 @@ export const fetchDocuments = async () => {
 export const uploadFiles = async (formData: FileUploadInput, callback: () => void) => {
     const requestBody = new FormData();
 
+    if (!formData.files) return;
+
     for (const formDatum of formData.files) {
         requestBody.append("formFiles", formDatum);
     }

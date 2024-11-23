@@ -1,5 +1,5 @@
 ﻿export type FileUploadInput = {
-    files: Blob[]
+    files: FileList | null
 }
 
 export type DocumentInfo = {
