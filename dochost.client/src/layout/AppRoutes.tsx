@@ -1,9 +1,9 @@
-﻿import {useAuth} from "../auth/AuthContext.tsx";
-import {Navigate, Route, Routes} from "react-router-dom";
+﻿import {Navigate, Route, Routes} from "react-router-dom";
 import Layout from "./Layout.tsx";
 import Login from "../auth/Login.tsx";
 import RequireAuth from "./RequireAuth.tsx";
 import Dashboard from "../dashboard/Dashboard.tsx";
+import {useAuth} from "../auth/useAuth.ts";
 
 function AppRoutes() {
     const auth = useAuth();

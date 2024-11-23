@@ -1,5 +1,6 @@
 ﻿import {LoginInput} from "../contracts/auth.ts";
 import {axiosInstance} from "./axiosInstance.ts";
+import {FileUploadInput} from "../contracts/document.ts";
 
 export const login = async (requestBody: LoginInput) => {
     const response = await axiosInstance.post("api/login", requestBody, {
@@ -8,11 +9,25 @@ export const login = async (requestBody: LoginInput) => {
         }
     });
 
-  if (response.status !== 200) {
-      throw new Error("Network response was not ok")
-  }
+    if (response.status !== 200) {
+        throw new Error("Network response was not ok")
+    }
 
-  return response.data;
+    return response.data;
+}
+
+export const register = async (requestBody: LoginInput) => {
+    const response = await axiosInstance.post("api/register", requestBody, {
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    if (response.status !== 200) {
+        throw new Error("Network response was not ok")
+    }
+
+    return response.data;
 }
 
 export const fetchDocuments = async () => {
@@ -29,8 +44,10 @@ export const fetchDocuments = async () => {
     return response.data;
 }
 
-export const uploadFiles = async (formData, callback) => {
+export const uploadFiles = async (formData: FileUploadInput, callback: () => void) => {
     const requestBody = new FormData();
+
+    if (!formData.files) return;
 
     for (const formDatum of formData.files) {
         requestBody.append("formFiles", formDatum);
