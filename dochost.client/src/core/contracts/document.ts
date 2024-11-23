@@ -6,4 +6,6 @@ export type DocumentInfo = {
     id: string
     fileName: string
     fileExt: string
+    downloadCount: number
+    createdAt: string
 }
