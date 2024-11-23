@@ -16,15 +16,12 @@ namespace Dochost.Server.Endpoints
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
 
         private const int ExpirationDurationMs = 1000 * 60 * 5; // 5 minutes
-        private static readonly WordManager WordManager = new();
-        private static readonly SpreadsheetManager SpreadsheetManager = new();
-        private static readonly PdfManager PdfManager = new();
 
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles, 
         IConfiguration
                 config, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager, IPreviewManager previewManager)
         {
             var ownerId = userManager.GetUserId(user);
             if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
@@ -54,7 +51,8 @@ namespace Dochost.Server.Endpoints
                 switch (ext)
                 {
                     case ".pdf":
-                        PdfManager.GetSinglePagePreview(previewUrl, filePath, 1);
+                        previewManager.PdfPreviewGenerator.GetSinglePagePreview(previewUrl, 
+                            filePath, 1);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
