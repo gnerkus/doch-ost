@@ -8,5 +8,7 @@
     public interface IPreviewManager
     {
         IPngPreviewGenerator PdfPreviewGenerator { get; }
+        IPngPreviewGenerator WordPreviewGenerator { get; }
+        IPngPreviewGenerator SpreadsheetPreviewGenerator { get; }
     }
 }
