@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Aspose.Cells" Version="24.11.0" />
+      <PackageReference Include="Aspose.Imaging" Version="24.11.0" />
+      <PackageReference Include="Aspose.PDF" Version="24.11.0" />
+      <PackageReference Include="Aspose.Words" Version="24.11.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Aspose.Totalfor.NET.lic" />
+      <EmbeddedResource Include="Aspose.Totalfor.NET.lic">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

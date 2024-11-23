@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Core.Contracts;
 using Core.Entities;
+using Dochost.Aspose;
 using Dochost.Encryption;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,9 @@ namespace Dochost.Server.Endpoints
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
 
         private const int ExpirationDurationMs = 1000 * 60 * 5; // 5 minutes
+        private static WordManager _wordManager = new WordManager();
+        private static SpreadsheetManager _spreadsheetManager = new SpreadsheetManager();
+        private static PDFManager _pdfManager = new PDFManager();
 
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles, 
