@@ -1,10 +1,13 @@
 ﻿using Aspose.Pdf;
+using Aspose.Pdf.Devices;
 
 namespace Dochost.Aspose;
 
-public class PDFManager
+public class PdfManager
 {
-    public PDFManager()
+    private readonly PngDevice _pngDevice;
+
+    public PdfManager()
     {
         var license = new License();
 
@@ -16,5 +19,16 @@ public class PDFManager
         {
             Console.WriteLine($"There was an error setting the license: {e.Message}");
         }
+
+        var resolution = new Resolution(150);
+        _pngDevice = new PngDevice(resolution);
+    }
+
+    public void GetSinglePagePreview(string previewUrl, string filePath, int pageNumber)
+    {
+        var document = new Document(filePath);
+        using var imageStream = new FileStream(previewUrl, FileMode.Create);
+        _pngDevice.Process(document.Pages[pageNumber], imageStream);
+        imageStream.Close();
     }
 }

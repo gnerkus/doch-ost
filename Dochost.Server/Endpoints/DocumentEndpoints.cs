@@ -16,9 +16,9 @@ namespace Dochost.Server.Endpoints
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png"];
 
         private const int ExpirationDurationMs = 1000 * 60 * 5; // 5 minutes
-        private static WordManager _wordManager = new WordManager();
-        private static SpreadsheetManager _spreadsheetManager = new SpreadsheetManager();
-        private static PDFManager _pdfManager = new PDFManager();
+        private static readonly WordManager WordManager = new();
+        private static readonly SpreadsheetManager SpreadsheetManager = new();
+        private static readonly PdfManager PdfManager = new();
 
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles, 
@@ -44,14 +44,28 @@ namespace Dochost.Server.Endpoints
 
                 var filePath = Path.GetTempFileName();
 
-                await using var stream = File.Create(filePath);
-                await formFile.CopyToAsync(stream);
+                await using (var stream = File.Create(filePath))
+                {
+                    await formFile.CopyToAsync(stream);
+                }
+
+                var previewUrl = Path.GetTempFileName();
+
+                switch (ext)
+                {
+                    case ".pdf":
+                        PdfManager.GetSinglePagePreview(previewUrl, filePath, 1);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
                 
                 documentInfoRepository.CreateDocument(ownerId, new DocumentInfo
                 {
                     DisplayName = formFile.FileName,
                     FileName = filePath,
                     FileExt = ext,
+                    PreviewUrl = previewUrl,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 });
@@ -87,6 +101,12 @@ namespace Dochost.Server.Endpoints
             {
                 ".png" => "image/png",
                 ".jpg" => "image/jpeg",
+                ".txt" => "text/plain",
+                ".pdf" => "application/pdf",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "" => "application/octet-stream",
                 _ => throw new ArgumentOutOfRangeException()
             };
