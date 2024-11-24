@@ -20,13 +20,15 @@ function Dashboard() {
     const inputRef = useRef<HTMLInputElement>(null);
     const [shareLink, setShareLink] = useState<Record<string, string>>({});
     const [currentDocInfo, setCurrentDocInfo] = useState<DocumentInfo | null>(null);
+    const [shouldPoll, setShouldPoll] = useState(true);
     const {session} = useAuth();
     const {
         isPending, error, data
     } = useQuery<DocumentInfo[]>({
         queryKey: ['documents'],
         queryFn: fetchDocuments,
-        enabled: !!session?.token
+        enabled: !!session?.token,
+        refetchInterval: 3000
     });
 
     const {
@@ -37,7 +39,7 @@ function Dashboard() {
             const res = await getPreview(currentDocInfo?.id);
             return await blobToBase64(res);
         },
-        enabled: !!session?.token && !!currentDocInfo && (currentDocInfo.previewStatus === "completed")
+        enabled: !!session?.token && !!currentDocInfo && (currentDocInfo.previewStatus === "completed"),
     })
 
     const queryClient = useQueryClient();
@@ -78,6 +80,10 @@ function Dashboard() {
     )
 
     if (error) return 'An error has occurred: ' + error.message
+
+    if(shouldPoll && data && !data.some(info => info.previewStatus === "processing")) {
+        setShouldPoll(false);
+    }
 
     return (
         <div className="py-4 px-8 flex flex-col h-[calc(100vh-64px)]">
