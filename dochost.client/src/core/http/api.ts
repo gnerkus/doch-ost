@@ -2,6 +2,8 @@
 import {axiosInstance} from "./axiosInstance.ts";
 import {FileUploadInput} from "../contracts/document.ts";
 
+export const API_HOST = 'https://localhost:7119';
+
 export const login = async (requestBody: LoginInput) => {
     const response = await axiosInstance.post("api/login", requestBody, {
         headers: {

@@ -1,5 +1,6 @@
 ﻿import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {
+    API_HOST,
     downloadFile,
     fetchDocuments,
     getPreview,
@@ -12,17 +13,7 @@ import {DocumentInfo} from "../core/contracts/document.ts";
 import LoadingIcon from "../core/components/LoadingIcon.tsx";
 import UIIcons from "../core/components/UIIcons.tsx";
 import FileIcons from "../core/components/FileIcons.tsx";
-
-const blobToBase64 = function (blob: Blob) {
-    return new Promise((resolve: (value: string | ArrayBuffer | null) => void) => {
-        const reader = new FileReader();
-        reader.onload = function () {
-            const dataUrl = reader.result;
-            resolve(dataUrl);
-        };
-        reader.readAsDataURL(blob);
-    });
-}
+import {blobToBase64} from "../core/utils.ts";
 
 function Dashboard() {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -76,12 +67,12 @@ function Dashboard() {
         const token = shareLink[currentDocInfo.id];
         if (!token) return ""
 
-        return `https://localhost:7119/documents/file?share=${encodeURIComponent(token)}`
+        return `${API_HOST}/documents/file?share=${encodeURIComponent(token)}`
     }, [currentDocInfo, shareLink]);
 
     if (isPending) return (
         <div className="flex justify-center items-center">
-            <LoadingIcon size={64}/>
+            <LoadingIcon size={96}/>
         </div>
     )
 
@@ -103,7 +94,7 @@ function Dashboard() {
                 <div className="w-2/3 p-4">
                     <div
                         className="border-b border-slate-300 flex gap-4 items-center px-2 pb-3 pt-4 cursor-pointer"
-                        >
+                    >
                         <div className="w-8 p-1">
 
                         </div>
