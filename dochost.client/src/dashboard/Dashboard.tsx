@@ -36,7 +36,7 @@ function Dashboard() {
             const res = await getPreview(currentDocInfo?.id);
             return await blobToBase64(res);
         },
-        enabled: !!session?.token && !!currentDocInfo?.id
+        enabled: !!session?.token && !!currentDocInfo && (currentDocInfo.previewStatus === "completed")
     })
 
     const queryClient = useQueryClient();
@@ -119,6 +119,10 @@ function Dashboard() {
                                     <p className="w-1/2">{documentInfo.fileName}</p>
                                     <p className="w-1/4">{new Date(documentInfo.createdAt).toLocaleString()}</p>
                                     <p className="m-auto">{documentInfo.downloadCount}</p>
+                                    <div className="max-w-8">
+                                        {documentInfo.previewStatus !== "completed" &&
+                                            <LoadingIcon size={24}/>}
+                                    </div>
                                 </div>
                             </div>
 
@@ -126,33 +130,32 @@ function Dashboard() {
                     })}
                 </div>
                 <div className="border-l p-4 flex flex-col gap-4 w-1/3">
-                    <div className="flex ml-auto gap-4">
-                        <input type="text" className="px-2 border border-slate-300 rounded-md"
-                               defaultValue={composeShareLink}/>
-                        <button className="bg-white border border-slate-300 p-2"
-                                onClick={async () => {
-                                    if (!currentDocInfo) return;
-                                    await getLink(currentDocInfo.id)
-                                }}><UIIcons type="share"/>
-                        </button>
-                        <button className="bg-white border border-slate-300 p-2"
-                                onClick={async () => {
-                                    if (!currentDocInfo) return;
-                                    await downloadFile(currentDocInfo.id, currentDocInfo.fileExt, currentDocInfo.fileName)
-                                }}><UIIcons type="download"/>
-                        </button>
-                    </div>
+                    {currentDocInfo?.uploadStatus === "completed" && (
+                        <div className="flex ml-auto gap-4">
+                            <input type="text" className="px-2 border border-slate-300 rounded-md"
+                                   defaultValue={composeShareLink}/>
+                            <button className="bg-white border border-slate-300 p-2"
+                                    onClick={async () => {
+                                        if (!currentDocInfo) return;
+                                        await getLink(currentDocInfo.id)
+                                    }}><UIIcons type="share"/>
+                            </button>
+                            <button className="bg-white border border-slate-300 p-2"
+                                    onClick={async () => {
+                                        if (!currentDocInfo) return;
+                                        await downloadFile(currentDocInfo.id, currentDocInfo.fileExt, currentDocInfo.fileName)
+                                    }}><UIIcons type="download"/>
+                            </button>
+                        </div>
+                    )}
                     <div className="m-auto">
                         {previewData ? (<img
                             className="w-5/6 m-auto p-4"
                             src={previewData}
                             alt="preview"/>) : (
-                            <div className=""><LoadingIcon size={64}/></div>
+                            <div className=""><LoadingIcon size={96}/></div>
 
                         )}
-                    </div>
-                    <div>
-
                     </div>
                 </div>
             </div>
