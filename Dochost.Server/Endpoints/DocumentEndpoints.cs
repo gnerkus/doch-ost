@@ -46,7 +46,7 @@ namespace Dochost.Server.Endpoints
                 var filePath = Path.GetTempFileName();
                 var previewUrl = Path.GetTempFileName();
                 var jobId = Guid.NewGuid();
-                
+
                 var clonedFormFile = new MemoryStream();
                 await formFile.CopyToAsync(clonedFormFile);
                 clonedFormFile.Position = 0;
@@ -150,7 +150,8 @@ namespace Dochost.Server.Endpoints
             if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
 
             var documentInfos = await documentInfoRepository.GetAllDocumentsAsync(ownerId, false);
-            return TypedResults.Ok(documentInfos.Select(info => info.ToDto()));
+            return TypedResults.Ok(documentInfos.Select(info => info.ToDto()).OrderByDescending
+                (info => info.CreatedAt));
         }
 
         [AllowAnonymous]
