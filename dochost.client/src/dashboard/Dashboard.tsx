@@ -14,6 +14,7 @@ import LoadingIcon from "../core/components/LoadingIcon.tsx";
 import UIIcons from "../core/components/UIIcons.tsx";
 import FileIcons from "../core/components/FileIcons.tsx";
 import {blobToBase64} from "../core/utils.ts";
+import DocumentStatus from "../core/components/DocumentStatus.tsx";
 
 function Dashboard() {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -120,8 +121,7 @@ function Dashboard() {
                                     <p className="w-1/4">{new Date(documentInfo.createdAt).toLocaleString()}</p>
                                     <p className="m-auto">{documentInfo.downloadCount}</p>
                                     <div className="w-8">
-                                        {documentInfo.previewStatus !== "completed" &&
-                                            <LoadingIcon size={24}/>}
+                                        <DocumentStatus status={documentInfo.previewStatus} />
                                     </div>
                                 </div>
                             </div>

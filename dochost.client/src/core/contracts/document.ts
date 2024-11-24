@@ -9,5 +9,5 @@ export type DocumentInfo = {
     downloadCount: number
     createdAt: string
     uploadStatus: string
-    previewStatus: string
+    previewStatus: "completed" | "failed" | "processing" | "queued" | ""
 }
