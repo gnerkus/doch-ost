@@ -19,11 +19,16 @@ public class PdfPreviewGenerator: PngPreviewGenerator, IPngPreviewGenerator
         }
     }
 
-    public void GetSinglePagePreview(string previewUrl, string filePath, int pageNumber)
+    public Task GetSinglePagePreview(string previewUrl, string filePath, int pageNumber)
     {
-        var document = new Document(filePath);
-        using var imageStream = new FileStream(previewUrl, FileMode.Create);
-        PngDevice.Process(document.Pages[pageNumber], imageStream);
-        imageStream.Close();
+        var task = Task.Run(() =>
+        {
+            var document = new Document(filePath);
+            using var imageStream = new FileStream(previewUrl, FileMode.Create);
+            PngDevice.Process(document.Pages[pageNumber], imageStream);
+            imageStream.Close();
+        });
+
+        return task;
     }
 }

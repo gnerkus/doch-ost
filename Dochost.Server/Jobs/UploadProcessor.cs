@@ -8,7 +8,7 @@ namespace Dochost.Server.Jobs
         IServiceProvider serviceProvider)
         : BackgroundService
     {
-        public IJobQueue JobQueue { get; } = jobQueue;
+        private IJobQueue JobQueue { get; } = jobQueue;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -46,21 +46,20 @@ namespace Dochost.Server.Jobs
                     switch (uploadJob.FileExt)
                     {
                         case ".pdf":
-                            previewManager.PdfPreviewGenerator.GetSinglePagePreview(
+                            await previewManager.PdfPreviewGenerator.GetSinglePagePreview(
                                 uploadJob.PreviewPath,
                                 uploadJob.FilePath, 1);
                             break;
                         case ".txt":
                         case ".doc":
                         case ".docx":
-                            var previewUrl =
-                                $"{Path.ChangeExtension(uploadJob.PreviewPath, null)}.png";
-                            previewManager.WordPreviewGenerator.GetSinglePagePreview(previewUrl,
+                            await previewManager.WordPreviewGenerator.GetSinglePagePreview
+                            (uploadJob.PreviewPath,
                                 uploadJob.FilePath, 1);
                             break;
                         case ".xls":
                         case ".xlsx":
-                            previewManager.SpreadsheetPreviewGenerator.GetSinglePagePreview
+                            await previewManager.SpreadsheetPreviewGenerator.GetSinglePagePreview
                                 (uploadJob.PreviewPath, uploadJob.FilePath, 1);
                             break;
                         case ".jpg":

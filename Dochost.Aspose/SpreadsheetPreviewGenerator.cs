@@ -21,17 +21,22 @@ public class SpreadsheetPreviewGenerator: PngPreviewGenerator, IPngPreviewGenera
         }
     }
 
-    public void GetSinglePagePreview(string previewUrl, string filePath, int pageNumber)
+    public Task GetSinglePagePreview(string previewUrl, string filePath, int pageNumber)
     {
-        var pageIndex = Math.Max(pageNumber - 1, 0);
-        var workbook = new Workbook(filePath);
-        var sheet = workbook.Worksheets[pageIndex];
-        var imgOptions = new ImageOrPrintOptions
+        var task = Task.Run(() =>
         {
-            OnePagePerSheet = true,
-            ImageType = ImageType.Png
-        };
-        var sr = new SheetRender(sheet, imgOptions);
-        sr.ToImage(pageIndex, previewUrl);
+            var pageIndex = Math.Max(pageNumber - 1, 0);
+            var workbook = new Workbook(filePath);
+            var sheet = workbook.Worksheets[pageIndex];
+            var imgOptions = new ImageOrPrintOptions
+            {
+                OnePagePerSheet = true,
+                ImageType = ImageType.Png
+            };
+            var sr = new SheetRender(sheet, imgOptions);
+            sr.ToImage(pageIndex, previewUrl);
+        });
+
+        return task;
     }
 }

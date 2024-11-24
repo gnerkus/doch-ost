@@ -16,6 +16,7 @@ namespace Dochost.Server.Endpoints
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png", ".jpeg", ".xls"];
 
         private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
+        private static readonly string[] DocumentExtensions = [".txt", ".doc", ".docx"];
 
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles,
@@ -45,6 +46,12 @@ namespace Dochost.Server.Endpoints
 
                 var filePath = Path.GetTempFileName();
                 var previewUrl = Path.GetTempFileName();
+
+                if (DocumentExtensions.Contains(ext))
+                {
+                    previewUrl = $"{Path.ChangeExtension(previewUrl, null)}.png";
+                }
+                
                 var jobId = Guid.NewGuid();
 
                 var clonedFormFile = new MemoryStream();
