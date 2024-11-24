@@ -8,5 +8,9 @@
         public int DownloadCount { get; init; }
         public DateTime? CreatedAt { get; init; }
         public DateTime? UpdatedAt { get; init; }
+        
+        public string? UploadStatus { get; init; }
+        
+        public string? PreviewStatus { get; init; }
     }
 }

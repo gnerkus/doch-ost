@@ -8,4 +8,6 @@ export type DocumentInfo = {
     fileExt: string
     downloadCount: number
     createdAt: string
+    uploadStatus: string
+    previewStatus: "completed" | "failed" | "processing" | "queued" | ""
 }

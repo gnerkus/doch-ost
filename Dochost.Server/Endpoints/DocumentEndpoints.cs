@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Core.Contracts;
 using Core.Entities;
 using Dochost.Encryption;
+using Dochost.Server.Jobs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +15,20 @@ namespace Dochost.Server.Endpoints
         private static readonly string[] PermittedExtensions =
             [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png", ".jpeg", ".xls"];
 
+        private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png"];
+        private static readonly string[] DocumentExtensions = [".txt", ".doc", ".docx"];
+
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles,
             IConfiguration
                 config, IDocumentInfoRepository documentInfoRepository, ClaimsPrincipal user,
-            UserManager<ApplicationUser> userManager, IPreviewManager previewManager)
+            UserManager<ApplicationUser> userManager, IJobQueue
+                jobQueue)
         {
             var ownerId = userManager.GetUserId(user);
             if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
+
+            var jobs = new List<UploadJob>();
 
             foreach (var formFile in formFiles)
             {
@@ -38,53 +45,49 @@ namespace Dochost.Server.Endpoints
                     return TypedResults.UnprocessableEntity("File too large");
 
                 var filePath = Path.GetTempFileName();
-
-                await using (var stream = File.Create(filePath))
-                {
-                    await formFile.CopyToAsync(stream);
-                }
-
                 var previewUrl = Path.GetTempFileName();
 
-                switch (ext)
+                if (DocumentExtensions.Contains(ext))
                 {
-                    case ".pdf":
-                        previewManager.PdfPreviewGenerator.GetSinglePagePreview(previewUrl,
-                            filePath, 1);
-                        break;
-                    case ".txt":
-                    case ".doc":
-                    case ".docx":
-                        previewUrl = $"{Path.ChangeExtension(previewUrl, null)}.png";
-                        previewManager.WordPreviewGenerator.GetSinglePagePreview(previewUrl,
-                            filePath, 1);
-                        break;
-                    case ".xls":
-                    case ".xlsx":
-                        previewManager.SpreadsheetPreviewGenerator.GetSinglePagePreview
-                            (previewUrl, filePath, 1);
-                        break;
-                    case ".jpg":
-                    case ".jpeg":
-                    case ".png":
-                        previewUrl = filePath;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    previewUrl = $"{Path.ChangeExtension(previewUrl, null)}.png";
                 }
+                
+                var jobId = Guid.NewGuid();
+
+                var clonedFormFile = new MemoryStream();
+                await formFile.CopyToAsync(clonedFormFile);
+                clonedFormFile.Position = 0;
+
+                var uploadJob = new UploadJob
+                {
+                    Id = jobId,
+                    FilePath = filePath,
+                    PreviewPath = previewUrl,
+                    FormFile = clonedFormFile,
+                    FileExt = ext,
+                    OwnerId = ownerId
+                };
+
+                jobs.Add(uploadJob);
 
                 documentInfoRepository.CreateDocument(ownerId, new DocumentInfo
                 {
                     DisplayName = formFile.FileName,
                     FileName = filePath,
                     FileExt = ext,
-                    PreviewUrl = previewUrl,
+                    PreviewUrl = ImageExtensions.Contains(ext) ? filePath : previewUrl,
                     CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    UpdatedAt = DateTime.Now,
+                    JobId = jobId,
+                    UploadStatus = "queued",
+                    PreviewStatus = "queued"
                 });
             }
 
             await documentInfoRepository.SaveAsync();
+
+            // enqueue jobs here
+            foreach (var job in jobs) await jobQueue.EnqueueAsync(job);
 
             return TypedResults.Ok();
         }
@@ -139,10 +142,7 @@ namespace Dochost.Server.Endpoints
             if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
 
             var secret = Environment.GetEnvironmentVariable("DCH_SECRET");
-            if (string.IsNullOrEmpty(secret))
-            {
-                throw new Exception("Missing configuration");
-            }
+            if (string.IsNullOrEmpty(secret)) throw new Exception("Missing configuration");
 
             var base64String = await TokenGenerator.EncryptUserFile(ownerId, fileId, secret);
             return TypedResults.Ok(base64String);
@@ -157,7 +157,8 @@ namespace Dochost.Server.Endpoints
             if (string.IsNullOrEmpty(ownerId)) return TypedResults.Unauthorized();
 
             var documentInfos = await documentInfoRepository.GetAllDocumentsAsync(ownerId, false);
-            return TypedResults.Ok(documentInfos.Select(info => info.ToDto()));
+            return TypedResults.Ok(documentInfos.Select(info => info.ToDto()).OrderByDescending
+                (info => info.CreatedAt));
         }
 
         [AllowAnonymous]
@@ -166,10 +167,7 @@ namespace Dochost.Server.Endpoints
                 config)
         {
             var secret = Environment.GetEnvironmentVariable("DCH_SECRET");
-            if (string.IsNullOrEmpty(secret))
-            {
-                throw new Exception("Missing configuration");
-            }
+            if (string.IsNullOrEmpty(secret)) throw new Exception("Missing configuration");
 
             var decryptedResult = await TokenGenerator.DecryptUserFile(share, secret);
             var stringDate = DateTime.ParseExact(decryptedResult.DateString,
@@ -177,10 +175,7 @@ namespace Dochost.Server.Endpoints
                     .InvariantCulture);
             var duration = DateTime.Now.Subtract(stringDate);
             var expirationDuration = config.GetValue<long>("ExpirationDurationMs");
-            if (duration.TotalMilliseconds > expirationDuration)
-            {
-                return TypedResults.NotFound();
-            }
+            if (duration.TotalMilliseconds > expirationDuration) return TypedResults.NotFound();
 
             var documentInfo = await documentInfoRepository.GetDocumentAsync(decryptedResult
                     .UserId, new Guid(decryptedResult.FileId),

@@ -24,7 +24,7 @@ const Login = () => {
             })
         } else {
             signUp(formData, () => {
-                setIsLogIn(true);
+                navigate("/login", {replace: true});
             });
         }
     }

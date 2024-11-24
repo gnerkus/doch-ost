@@ -14,6 +14,7 @@ import LoadingIcon from "../core/components/LoadingIcon.tsx";
 import UIIcons from "../core/components/UIIcons.tsx";
 import FileIcons from "../core/components/FileIcons.tsx";
 import {blobToBase64} from "../core/utils.ts";
+import DocumentStatus from "../core/components/DocumentStatus.tsx";
 
 function Dashboard() {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +37,7 @@ function Dashboard() {
             const res = await getPreview(currentDocInfo?.id);
             return await blobToBase64(res);
         },
-        enabled: !!session?.token && !!currentDocInfo?.id
+        enabled: !!session?.token && !!currentDocInfo && (currentDocInfo.previewStatus === "completed")
     })
 
     const queryClient = useQueryClient();
@@ -90,8 +91,8 @@ function Dashboard() {
                         type="upload"/></button>
                 </div>
             </div>
-            <div className="border border-slate-300 rounded-2xl my-4 flex flex-grow">
-                <div className="w-2/3 p-4">
+            <div className="border border-slate-300 rounded-2xl my-4 flex flex-grow max-h-[calc(100vh-192px)]">
+                <div className="w-2/3 p-4 overflow-y-scroll">
                     <div
                         className="border-b border-slate-300 flex gap-4 items-center px-2 pb-3 pt-4 cursor-pointer"
                     >
@@ -119,6 +120,9 @@ function Dashboard() {
                                     <p className="w-1/2">{documentInfo.fileName}</p>
                                     <p className="w-1/4">{new Date(documentInfo.createdAt).toLocaleString()}</p>
                                     <p className="m-auto">{documentInfo.downloadCount}</p>
+                                    <div className="w-8">
+                                        <DocumentStatus status={documentInfo.previewStatus} />
+                                    </div>
                                 </div>
                             </div>
 
@@ -126,33 +130,32 @@ function Dashboard() {
                     })}
                 </div>
                 <div className="border-l p-4 flex flex-col gap-4 w-1/3">
-                    <div className="flex ml-auto gap-4">
-                        <input type="text" className="px-2 border border-slate-300 rounded-md"
-                               defaultValue={composeShareLink}/>
-                        <button className="bg-white border border-slate-300 p-2"
-                                onClick={async () => {
-                                    if (!currentDocInfo) return;
-                                    await getLink(currentDocInfo.id)
-                                }}><UIIcons type="share"/>
-                        </button>
-                        <button className="bg-white border border-slate-300 p-2"
-                                onClick={async () => {
-                                    if (!currentDocInfo) return;
-                                    await downloadFile(currentDocInfo.id, currentDocInfo.fileExt, currentDocInfo.fileName)
-                                }}><UIIcons type="download"/>
-                        </button>
-                    </div>
+                    {currentDocInfo?.uploadStatus === "completed" && (
+                        <div className="flex ml-auto gap-4">
+                            <input type="text" className="px-2 border border-slate-300 rounded-md"
+                                   defaultValue={composeShareLink}/>
+                            <button className="bg-white border border-slate-300 p-2"
+                                    onClick={async () => {
+                                        if (!currentDocInfo) return;
+                                        await getLink(currentDocInfo.id)
+                                    }}><UIIcons type="share"/>
+                            </button>
+                            <button className="bg-white border border-slate-300 p-2"
+                                    onClick={async () => {
+                                        if (!currentDocInfo) return;
+                                        await downloadFile(currentDocInfo.id, currentDocInfo.fileExt, currentDocInfo.fileName)
+                                    }}><UIIcons type="download"/>
+                            </button>
+                        </div>
+                    )}
                     <div className="m-auto">
                         {previewData ? (<img
                             className="w-5/6 m-auto p-4"
                             src={previewData}
                             alt="preview"/>) : (
-                            <div className=""><LoadingIcon size={64}/></div>
+                            <div className=""><LoadingIcon size={96}/></div>
 
                         )}
-                    </div>
-                    <div>
-
                     </div>
                 </div>
             </div>

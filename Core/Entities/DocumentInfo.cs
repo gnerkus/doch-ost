@@ -23,6 +23,14 @@ namespace Core.Entities
         public string? FileExt { get; init; }
 
         public int DownloadCount { get; set; }
+        
+        public Guid JobId { get; init; }
+
+        [MaxLength(20, ErrorMessage = "Maximum length for upload status was exceeded")]
+        public string UploadStatus { get; set; } = "pending";
+        
+        [MaxLength(20, ErrorMessage = "Maximum length for preview status was exceeded")]
+        public string PreviewStatus { get; set; } = "pending";
 
         [ForeignKey(nameof(ApplicationUser))] public string? OwnerId { get; set; }
         public ApplicationUser? Owner { get; init; }

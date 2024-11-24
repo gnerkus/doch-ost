@@ -29,6 +29,18 @@ namespace Data.Repositories
             return await query.SingleOrDefaultAsync();
         }
 
+        public async Task<DocumentInfo?> GetByJobId(string ownerId, Guid jobId, bool trackChanges)
+        {
+            var query = dbContext
+                .Set<DocumentInfo>()
+                .Where(d =>
+                    d.OwnerId != null && d.OwnerId.Equals(ownerId) && d.JobId.Equals(jobId));
+            
+            if (!trackChanges) query.AsNoTracking();
+
+            return await query.SingleOrDefaultAsync();
+        }
+
         public void CreateDocument(string ownerId, DocumentInfo documentInfo)
         {
             documentInfo.OwnerId = ownerId;

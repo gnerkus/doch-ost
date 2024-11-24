@@ -14,7 +14,9 @@ namespace Core.Entities
                     FileExt = documentInfo.FileExt,
                     DownloadCount = documentInfo.DownloadCount,
                     CreatedAt = documentInfo.CreatedAt,
-                    UpdatedAt = documentInfo.UpdatedAt
+                    UpdatedAt = documentInfo.UpdatedAt,
+                    UploadStatus = documentInfo.UploadStatus,
+                    PreviewStatus = documentInfo.PreviewStatus
                 };
 
             return null;

@@ -19,10 +19,15 @@ public class WordPreviewGenerator: PngPreviewGenerator, IPngPreviewGenerator
         }
     }
 
-    public void GetSinglePagePreview(string previewUrl, string filePath, int pageNumber)
+    public Task GetSinglePagePreview(string previewUrl, string filePath, int pageNumber)
     {
-        var document = new Document(filePath);
-        var extractedPage = document.ExtractPages(Math.Max(pageNumber - 1, 0), 1);
-        extractedPage.Save(previewUrl);
+        var task = Task.Run(() =>
+        {
+            var document = new Document(filePath);
+            var extractedPage = document.ExtractPages(Math.Max(pageNumber - 1, 0), 1);
+            extractedPage.Save(previewUrl);
+        });
+
+        return task;
     }
 }
