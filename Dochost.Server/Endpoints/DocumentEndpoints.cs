@@ -12,7 +12,7 @@ namespace Dochost.Server.Endpoints
     public static class DocumentEndpoints
     {
         private static readonly string[] PermittedExtensions =
-            [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png", ".jpeg"];
+            [".txt", ".pdf", ".doc", ".docx", ".xlsx", ".jpg", ".png", ".jpeg", ".xls"];
 
         [Authorize]
         private static async Task<IResult> UploadFileAsync(IFormFileCollection formFiles,
@@ -55,6 +55,7 @@ namespace Dochost.Server.Endpoints
                     case ".txt":
                     case ".doc":
                     case ".docx":
+                        previewUrl = $"{Path.ChangeExtension(previewUrl, null)}.png";
                         previewManager.WordPreviewGenerator.GetSinglePagePreview(previewUrl,
                             filePath, 1);
                         break;
@@ -121,7 +122,7 @@ namespace Dochost.Server.Endpoints
                 ".docx" =>
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 ".xls" => "application/vnd.ms-excel",
-                "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "" => "application/octet-stream",
                 _ => throw new ArgumentOutOfRangeException()
             };
@@ -210,7 +211,7 @@ namespace Dochost.Server.Endpoints
                 ".docx" =>
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 ".xls" => "application/vnd.ms-excel",
-                "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "" => "application/octet-stream",
                 _ => throw new ArgumentOutOfRangeException()
             };
