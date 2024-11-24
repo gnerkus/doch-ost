@@ -177,7 +177,7 @@ namespace Dochost.Server.Endpoints
                     .InvariantCulture);
             var duration = DateTime.Now.Subtract(stringDate);
             var expirationDuration = config.GetValue<long>("ExpirationDurationMs");
-            if (duration.Milliseconds > expirationDuration)
+            if (duration.TotalMilliseconds > expirationDuration)
             {
                 return TypedResults.NotFound();
             }
