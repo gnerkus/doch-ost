@@ -90,8 +90,8 @@ function Dashboard() {
                         type="upload"/></button>
                 </div>
             </div>
-            <div className="border border-slate-300 rounded-2xl my-4 flex flex-grow">
-                <div className="w-2/3 p-4">
+            <div className="border border-slate-300 rounded-2xl my-4 flex flex-grow max-h-[calc(100vh-192px)]">
+                <div className="w-2/3 p-4 overflow-y-scroll">
                     <div
                         className="border-b border-slate-300 flex gap-4 items-center px-2 pb-3 pt-4 cursor-pointer"
                     >
@@ -119,7 +119,7 @@ function Dashboard() {
                                     <p className="w-1/2">{documentInfo.fileName}</p>
                                     <p className="w-1/4">{new Date(documentInfo.createdAt).toLocaleString()}</p>
                                     <p className="m-auto">{documentInfo.downloadCount}</p>
-                                    <div className="max-w-8">
+                                    <div className="w-8">
                                         {documentInfo.previewStatus !== "completed" &&
                                             <LoadingIcon size={24}/>}
                                     </div>
