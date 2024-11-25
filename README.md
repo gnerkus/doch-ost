@@ -1,4 +1,4 @@
-﻿This project contains the code for the **Dochost** backend server and web client.
+﻿This project contains the code for the **Doch-ost** backend server and web client.
 
 # Development
 
